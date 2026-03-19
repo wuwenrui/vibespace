@@ -422,7 +422,7 @@
               <div x-show="tool.hasVersion && hasAiTool(tool.id)" x-transition @click.stop class="mt-3 pt-3 border-t border-gray-700">
                 <div class="flex items-end gap-4">
                   <div>
-                    <label class="text-xs text-gray-400 block mb-1">版本</label>
+                    <label class="text-xs text-gray-400 block mb-1">版本 <span class="text-gray-600">(不带 v，如 2.1.71)</span></label>
                     <input
                       type="text"
                       :value="aiToolVersions[tool.id] || tool.defaultVersion"
