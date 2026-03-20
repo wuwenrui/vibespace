@@ -74,7 +74,7 @@ function generateDockerfile(config) {
 
   if (config.needsNodejs) {
     const nodeVer = config.languageVersions.nodejs || '20';
-    layer1.push(`curl -fsSL https://deb.nodesource.com/setup_${nodeVer}.x | bash -`);
+    layer1.push(`curl -fsSL ${URLS.languages.nodejs.setup(nodeVer)} | bash -`);
     layer1.push('apt-get install -y --no-install-recommends nodejs');
   }
   // Python: 指定版本通过 deadsnakes PPA 安装
@@ -83,7 +83,7 @@ function generateDockerfile(config) {
     layer1.push('apt-get update');
     layer1.push(`apt-get install -y --no-install-recommends python${pythonVer} python${pythonVer}-distutils`);
     layer1.push(`update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${pythonVer} 1`);
-    layer1.push('curl -sS https://bootstrap.pypa.io/get-pip.py | python3');
+    layer1.push(`curl -sS ${URLS.languages.python.getPip} | python3`);
   }
   if (config.languages.includes('python') && isChina) {
     layer1.push(`pip3 config set global.index-url ${mirrors.pip}`);
@@ -97,12 +97,12 @@ function generateDockerfile(config) {
   const runtime = [];
   if (config.languages.includes('go')) {
     const goUrl = isChina
-      ? 'https://golang.google.cn/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz'
-      : 'https://go.dev/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz';
+      ? URLS.languages.go.downloadChina('${GOLANG_VERSION}')
+      : URLS.languages.go.download('${GOLANG_VERSION}');
     runtime.push(`wget -q ${goUrl}`, 'tar -C /usr/local -xzf go${GOLANG_VERSION}.linux-amd64.tar.gz', 'rm -f go${GOLANG_VERSION}.linux-amd64.tar.gz');
   }
   if (config.languages.includes('rust')) {
-    runtime.push('curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y');
+    runtime.push(`curl --proto "=https" --tlsv1.2 -sSf ${URLS.languages.rust.rustup} | sh -s -- -y`);
     runtime.push('echo \'source $HOME/.cargo/env\' >> /root/.bashrc');
   }
   if (config.languages.includes('python') && config.pythonVenv) {
@@ -146,7 +146,7 @@ function generateDockerfile(config) {
   // --- 层5: code-server + 扩展 ---
   if (config.codeServer) {
     lines.push('# 层5a: 安装 code-server');
-    lines.push('RUN curl -fsSL https://raw.githubusercontent.com/coder/code-server/main/install.sh | sh \\');
+    lines.push(`RUN curl -fsSL ${URLS.tools.codeServer.install} | sh \\`);
     lines.push('    && rm -rf /tmp/*');
     lines.push('');
 
@@ -225,8 +225,8 @@ function generateDockerfile(config) {
       if (style) {
         claudeCmds.push('mkdir -p ~/.claude/output-styles');
         if (style.isCustom) {
-          const ghProxy = isChina ? DEFAULTS.chinaMirrors.ghProxy : '';
-          const styleUrl = `${ghProxy}https://raw.githubusercontent.com/SaladDay/zcf/main/templates/common/output-styles/zh-CN/${style.id}.md`;
+          const rawStyleUrl = URLS.zcf.outputStyle(style.id);
+          const styleUrl = isChina ? URLS.withGhProxy(rawStyleUrl) : rawStyleUrl;
           claudeCmds.push(`(curl -sSL "${styleUrl}" -o ~/.claude/output-styles/${style.id}.md 2>/dev/null || true)`);
         }
         claudeCmds.push(`(claude config set outputStyle "${outputStyle}" -g 2>/dev/null || true)`);
@@ -247,8 +247,7 @@ function generateDockerfile(config) {
       claudeCmds.push('mkdir -p ~/.claude/commands/zcf');
       claudeCmds.push('mkdir -p ~/.claude/agents/zcf');
 
-      const ghProxy = isChina ? DEFAULTS.chinaMirrors.ghProxy : '';
-      const baseUrl = `${ghProxy}https://raw.githubusercontent.com/UfoMiao/zcf/main/templates`;
+      const baseUrl = isChina ? URLS.withGhProxy(URLS.zcf.baseUrl) : URLS.zcf.baseUrl;
 
       const zcfModules = [
         { commands: ['init-project.md'], agents: ['init-architect.md', 'get-current-datetime.md'], category: 'common' },

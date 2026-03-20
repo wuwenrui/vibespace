@@ -11,7 +11,8 @@ function generateEntrypoint(config) {
   // DNS (构建阶段 resolv.conf 只读，在运行时配置)
   if (isChina) {
     lines.push('# --- DNS ---');
-    lines.push('echo -e "nameserver 1.1.1.1\\nnameserver 114.114.114.114\\nnameserver 119.29.29.29" | tee /etc/resolv.conf > /dev/null');
+    const dnsStr = DEFAULTS.chinaMirrors.dns.replace(/\n/g, '\\n');
+    lines.push(`echo -e "${dnsStr}" | tee /etc/resolv.conf > /dev/null`);
     lines.push('');
   }
 

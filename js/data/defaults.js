@@ -86,22 +86,22 @@ const DEFAULTS = {
 
   /* 中国镜像源 */
   chinaMirrors: {
-    dns: 'nameserver 1.1.1.1\nnameserver 114.114.114.114\nnameserver 119.29.29.29',
-    aptScript: 'curl -sSL https://gitee.com/SuperManito/LinuxMirrors/raw/main/ChangeMirrors.sh | bash -s -- --source mirrors.pku.edu.cn --protocol http --use-intranet-source false --backup false --upgrade-software false --clean-cache false --ignore-backup-tips',
-    npm: 'https://registry.npmmirror.com',
-    pip: 'https://pypi.tuna.tsinghua.edu.cn/simple',
-    goProxy: 'https://goproxy.cn,direct',
-    ghProxy: 'https://gh-proxy.org/',
+    dns: URLS.mirrors.dns,
+    aptScript: `curl -sSL ${URLS.mirrors.aptScript} | bash -s -- --source mirrors.pku.edu.cn --protocol http --use-intranet-source false --backup false --upgrade-software false --clean-cache false --ignore-backup-tips`,
+    npm: URLS.mirrors.npmRegistry,
+    pip: URLS.mirrors.pipIndex,
+    goProxy: URLS.mirrors.goProxy,
+    ghProxy: URLS.mirrors.ghProxy,
   },
 
   /* 工具下载地址 — url: 官方源, mirrorUrl: gh-proxy 镜像 */
   cloudflared: {
-    url: 'https://github.com/cloudflare/cloudflared/releases/download/2026.3.0/cloudflared-linux-amd64',
-    mirrorUrl: 'https://gh-proxy.org/https://github.com/cloudflare/cloudflared/releases/download/2026.3.0/cloudflared-linux-amd64',
+    url: URLS.tools.cloudflared.url,
+    mirrorUrl: URLS.withGhProxy(URLS.tools.cloudflared.url),
   },
   ccSwitch: {
-    url: 'https://github.com/SaladDay/cc-switch-cli/releases/latest/download/install.sh',
-    mirrorUrl: 'https://gh-proxy.org/https://github.com/SaladDay/cc-switch-cli/releases/latest/download/install.sh',
+    url: URLS.tools.ccSwitch.url,
+    mirrorUrl: URLS.withGhProxy(URLS.tools.ccSwitch.url),
   },
 
   /* MCP Server 预设 */
