@@ -20,8 +20,6 @@ function generateCnbYml() {
   lines.push('          - /root/.claude');
   lines.push('          #code-server 的配置目录');
   lines.push('          - /root/.vscode-server');
-  lines.push('          #code-server 的插件的配置目录');
-  lines.push('          - /root/.local/share/code-server/extensions');
   lines.push('          #cc-switch-cli的配置目录，如果您使用cc-switch，请保留');
   lines.push('          - /root/.cc-switch');
   lines.push('      services:');
