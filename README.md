@@ -36,7 +36,8 @@
 
 #### CNB：
 [CNB](https://cnb.cool/) 平台提供每月免费1600核时的云开发环境时长，足够每天使用8小时6核心12G内存的VibeSpace
-部署方法为：在CNB平台新建一个仓库，将生成的Dockerfile，entrypoint.sh，.cnb.yml 上传到仓库根目录，点击云原生开发即可，CNB平台暂不支持`environment`
+
+部署方法：在CNB平台新建一个仓库，将生成的Dockerfile，entrypoint.sh，.cnb.yml 上传到仓库根目录，点击云原生开发即可
 ![CNB部署仓库示意](assets/img/readme-doc-cnb-1.png) 
 ### 部署到自有机器
 
