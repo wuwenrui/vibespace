@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Vibe Space is a web-based tool that generates containerized development environment configurations. Users configure their stack through a 6-step wizard UI, and the system produces four files: `Dockerfile`, `docker-compose.yml`, `entrypoint.sh`, and `deploy.sh`. There is no build step — the frontend is purely static HTML/JS served directly.
+Vibe Space is a web-based tool that generates containerized development environment configurations. Users configure their stack through a 6-step wizard UI, and the system produces five files: `Dockerfile`, `docker-compose.yml`, `entrypoint.sh`, `deploy.sh`, and `.cnb.yml`. There is no build step — the frontend is purely static HTML/JS served directly.
 
 ## Development
 
@@ -30,7 +30,7 @@ The `build-test/` directory contains a pre-generated reference configuration wit
 UI (index.html + Alpine.js) → appState (js/app.js) → generators → output preview
 ```
 
-All state lives in a single `appState()` Alpine.js component. Every config property is watched via `$watch`, so any change triggers `generate()` which calls all four generators and refreshes syntax highlighting.
+All state lives in a single `appState()` Alpine.js component. Every config property is watched via `$watch`, so any change triggers `generate()` which calls all five generators and refreshes syntax highlighting.
 
 ### Key Modules
 
@@ -41,6 +41,7 @@ All state lives in a single `appState()` Alpine.js component. Every config prope
 - **`js/generators/compose.js`** — Generates docker-compose YAML with port mappings, volumes, and environment variables
 - **`js/generators/entrypoint.js`** — Generates the container startup script (git config, SSH keys, passwords, dynamic README, service launch)
 - **`js/generators/deploy.js`** — Generates a user-friendly deployment helper script
+- **`js/generators/cnb.js`** — Generates `.cnb.yml` for CNB cloud platform. CNB uses `env` (not `environment`) for env vars, and data persistence via symlinks to `/root/.cnb/` in `stages` (not `volumes`)
 - **`js/utils/download.js`** — Single file download and ZIP packaging via JSZip
 - **`js/utils/highlight.js`** — Prism.js syntax highlighting wrapper
 
