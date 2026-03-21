@@ -172,6 +172,32 @@
         <h2 class="text-xl font-bold mb-2">💻 Code-Server</h2>
         <p class="text-gray-500 text-sm mb-6">若要在 CNB / Github Codespace /HuggingFace 等部署VibeSpace，或希望在浏览器中使用VsCode，请启用 Code-Server</p>
 
+        <!-- Git 用户信息 -->
+        <div class="mb-6 max-w-2xl">
+          <h3 class="text-sm font-medium text-gray-300 mb-2">Git 用户信息 <span class="text-gray-600 font-normal">(可选)</span></h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs text-gray-400 block mb-1">用户名</label>
+              <input
+                type="text"
+                x-model="gitUserName"
+                placeholder="Your Name"
+                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
+              >
+            </div>
+            <div>
+              <label class="text-xs text-gray-400 block mb-1">邮箱</label>
+              <input
+                type="text"
+                x-model="gitUserEmail"
+                placeholder="you@example.com"
+                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
+              >
+            </div>
+          </div>
+          <p class="text-xs text-gray-600 mt-1">用于 git config，将写入环境变量，容器启动时自动配置</p>
+        </div>
+
         <!-- 开关 -->
         <div class="flex items-center gap-4 mb-6">
           <button
