@@ -213,7 +213,7 @@ const DEFAULTS = {
       aiTools: ['cc-switch', 'claude-code'], aiToolVersions: {},
       claudeWorkflows: [],
       claudeOutputStyle: 'default',
-      cfTunnel: false, cfToken: '', volumeMode: 'named',
+      cfTunnel: false, cfToken: '', cnbProjectName: '', volumeMode: 'named',
       vibeCommand: true, vibeCommandText: 'IS_SANDBOX=1 claude --dangerously-skip-permissions',
       customDockerfile: '',
     },

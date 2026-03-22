@@ -667,6 +667,19 @@
             </div>
           </div>
 
+          <!-- CNB 项目名称 -->
+          <div class="border border-gray-700 rounded-xl p-4">
+            <h3 class="font-bold text-sm mb-2">CNB 项目名称 <span class="text-gray-600 font-normal">(可选)</span></h3>
+            <p class="text-gray-500 text-xs mb-3">用于 CNB 云平台的数据隔离。留空则同账号下所有仓库共享 <code class="text-gray-400">/root/.cnb/</code> 目录</p>
+            <input
+              type="text"
+              x-model="cnbProjectName"
+              placeholder="例如: my-project"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-600 focus:border-blue-500 outline-none"
+            >
+            <p class="text-gray-600 text-xs mt-2">填写后将使用 <code class="text-gray-400">/root/.cnb/[项目名称]/</code> 存储数据，避免不同项目间数据混乱，如不隔离，则您的两个CNB开发环境A和B的root目录中的配置文件将一致，好处是不必重复配置，坏处是数据较为混乱，请根据情况选择</p>
+          </div>
+
           <!-- 挂载方式 -->
           <div class="border border-gray-700 rounded-xl p-4">
             <h3 class="font-bold text-sm mb-2">数据持久化方式</h3>
