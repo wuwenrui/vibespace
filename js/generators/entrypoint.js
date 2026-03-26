@@ -115,15 +115,6 @@ function generateEntrypoint(config) {
     lines.push('');
   }
 
-  // Vibe 别名
-  if (config.vibeCommand && config.vibeCommandText) {
-    lines.push('# --- Vibe 快捷命令 ---');
-    const escaped = config.vibeCommandText.replace(/'/g, "'\\''");
-    lines.push(`echo 'alias vibe="${escaped}"' >> /root/.bashrc`);
-    lines.push('source /root/.bashrc');
-    lines.push('');
-  }
-
   // 动态生成 README
   lines.push('# --- README ---');
   lines.push('cat > /workspace/README.md << \'READMEEOF\'');
