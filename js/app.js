@@ -45,6 +45,18 @@ function appState() {
     customDockerfile: '',
     currentPreset: '',
 
+    /* OSS 对象存储持久化配置 (仅 CNB 平台) */
+    ossEnabled: true,  // 默认启用
+    ossEndpoint: '',
+    ossAccessKey: '',
+    ossSecretKey: '',
+    ossBucket: '',
+    ossRegion: 'auto',
+    ossProject: 'devbox',
+    ossPaths: '/root/.claude:/root/.cc-switch:/root/.local/share/code-server/User/globalStorage:/root/.vscode-server/data/User/globalStorage',
+    ossKeepCount: 5,
+    ossSyncInterval: 5,
+
     /* 生成结果 */
     generatedDockerfile: '',
     generatedEntrypoint: '',
@@ -64,6 +76,8 @@ function appState() {
         'rootPassword', 'csPassword', 'sshPrivateKey', 'sshPublicKey',
         'cfTunnel', 'cfToken', 'vibeCommand', 'vibeCommandText',
         'volumeMode', 'customDockerfile',
+        'ossEnabled', 'ossEndpoint', 'ossAccessKey', 'ossSecretKey', 'ossBucket',
+        'ossRegion', 'ossProject', 'ossPaths', 'ossKeepCount', 'ossSyncInterval',
       ];
       watched.forEach(key => this.$watch(key, () => this.generate()));
     },
@@ -262,6 +276,17 @@ function appState() {
         volumeMode: this.volumeMode,
         customDockerfile: this.customDockerfile,
         needsNodejs: this.needsNodejs(),
+        // OSS 对象存储配置
+        ossEnabled: this.ossEnabled,
+        ossEndpoint: this.ossEndpoint,
+        ossAccessKey: this.ossAccessKey,
+        ossSecretKey: this.ossSecretKey,
+        ossBucket: this.ossBucket,
+        ossRegion: this.ossRegion,
+        ossProject: this.ossProject,
+        ossPaths: this.ossPaths,
+        ossKeepCount: this.ossKeepCount,
+        ossSyncInterval: this.ossSyncInterval,
       };
     },
 
