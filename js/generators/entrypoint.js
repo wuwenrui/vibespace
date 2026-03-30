@@ -70,7 +70,7 @@ function generateEntrypoint(config) {
     lines.push('');
     lines.push('    # 1. 复制目标目录到 staging');
     lines.push('    mkdir -p "$staging_dir"');
-    lines.push('    IFS=',' read -ra PATHS <<< "$OSS_PATHS"');
+    lines.push('    IFS=, read -ra PATHS <<< "$OSS_PATHS"');
     lines.push('    for path in "${PATHS[@]}"; do');
     lines.push('        if [ -d "$path" ]; then');
     lines.push('            # 保持相对路径结构');
@@ -166,7 +166,7 @@ function generateEntrypoint(config) {
     lines.push('    echo "[OSS] 备份当前目录..."');
     lines.push('    local backup_dir="/tmp/pre-restore-backup-$(date +%s)"');
     lines.push('    mkdir -p "$backup_dir"');
-    lines.push('    IFS=',' read -ra PATHS <<< "$OSS_PATHS"');
+    lines.push('    IFS=, read -ra PATHS <<< "$OSS_PATHS"');
     lines.push('    for path in "${PATHS[@]}"; do');
     lines.push('        if [ -d "$path" ]; then');
     lines.push('            local rel_path="${path#/}"');
