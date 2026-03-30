@@ -77,7 +77,7 @@ function generateEntrypoint(config) {
     lines.push('            local rel_path="${path#/}"');
     lines.push('            local target_dir="$staging_dir/$rel_path"');
     lines.push('            mkdir -p "$target_dir"');
-    lines.push('            if ! cp -a "$path/." "$target_dir/" 2>/dev/null; then');
+    lines.push('            if ! cp -a "$path/." "$target_dir/"; then');
     lines.push('                echo "[OSS] 复制失败: $path"');
     lines.push('                copy_failed=1');
     lines.push('            else');
@@ -95,7 +95,7 @@ function generateEntrypoint(config) {
     lines.push('');
     lines.push('    # 2. 打包为 tar.zst');
     lines.push('    echo "[OSS] 打包压缩..."');
-    lines.push('    if ! tar -I zstd -cf "$snapshot_file" -C "$staging_dir" . 2>/dev/null; then');
+    lines.push('    if ! tar -I zstd -cf "$snapshot_file" -C "$staging_dir" .; then');
     lines.push('        echo "[OSS] 打包失败，中止上传"');
     lines.push('        rm -rf "$staging_dir" "$snapshot_file"');
     lines.push('        return 1');
@@ -104,7 +104,7 @@ function generateEntrypoint(config) {
     lines.push('    # 3. 上传到对象存储');
     lines.push('    local remote_path="${OSS_BUCKET}/${SNAPSHOT_NAME}"');
     lines.push('    echo "[OSS] 上传到: $remote_path"');
-    lines.push('    if ! rclone copyto "$snapshot_file" "${RCLONE_REMOTE}:${remote_path}" -P --quiet 2>/dev/null; then');
+    lines.push('    if ! rclone copyto "$snapshot_file" "${RCLONE_REMOTE}:${remote_path}" -P --quiet >> /var/log/vibespace-rclone.log 2>&1; then');
     lines.push('        echo "[OSS] 上传失败"');
     lines.push('        rm -rf "$staging_dir" "$snapshot_file"');
     lines.push('        return 1');
@@ -115,13 +115,13 @@ function generateEntrypoint(config) {
     lines.push('');
     lines.push('    # 5. 清理旧快照，保留最近 N 份');
     lines.push('    echo "[OSS] 清理旧快照，保留 ${OSS_KEEP_COUNT} 份..."');
-    lines.push('    rclone lsf "${RCLONE_REMOTE}:${OSS_BUCKET}/" --files-only 2>/dev/null | \\');
+    lines.push('    rclone lsf "${RCLONE_REMOTE}:${OSS_BUCKET}/" --files-only 2>> /var/log/vibespace-rclone.log | \\');
     lines.push('        grep "^${OSS_PROJECT}-cnb-" | sort -r | \\');
     lines.push('        tail -n +$((OSS_KEEP_COUNT + 1)) | \\');
     lines.push('        while IFS= read -r snap; do');
     lines.push('            if [ -n "$snap" ]; then');
     lines.push('                echo "[OSS] 删除旧快照: $snap"');
-    lines.push('                rclone delete "${RCLONE_REMOTE}:${OSS_BUCKET}/$snap" --quiet 2>/dev/null || true');
+    lines.push('                rclone delete "${RCLONE_REMOTE}:${OSS_BUCKET}/$snap" --quiet >> /var/log/vibespace-rclone.log 2>&1 || true');
     lines.push('            fi');
     lines.push('        done');
     lines.push('');
@@ -143,7 +143,7 @@ function generateEntrypoint(config) {
     lines.push('');
     lines.push('    # 1. 查找最新快照');
     lines.push('    local latest_snapshot');
-    lines.push('    latest_snapshot=$(rclone lsf "${RCLONE_REMOTE}:${OSS_BUCKET}/" --files-only 2>/dev/null | grep "^${OSS_PROJECT}-cnb-" | sort -r | head -1)');
+    lines.push('    latest_snapshot=$(rclone lsf "${RCLONE_REMOTE}:${OSS_BUCKET}/" --files-only 2>> /var/log/vibespace-rclone.log | grep "^${OSS_PROJECT}-cnb-" | sort -r | head -1)');
     lines.push('');
     lines.push('    if [ -z "$latest_snapshot" ]; then');
     lines.push('        echo "[OSS] 未找到快照，视为首次运行，允许同步"');
@@ -157,7 +157,7 @@ function generateEntrypoint(config) {
     lines.push('    local snapshot_file="/tmp/${latest_snapshot}"');
     lines.push('    local remote_path="${OSS_BUCKET}/${latest_snapshot}"');
     lines.push('    echo "[OSS] 下载快照..."');
-    lines.push('    if ! rclone copyto "${RCLONE_REMOTE}:${remote_path}" "$snapshot_file" --quiet 2>/dev/null; then');
+    lines.push('    if ! rclone copyto "${RCLONE_REMOTE}:${remote_path}" "$snapshot_file" --quiet >> /var/log/vibespace-rclone.log 2>&1; then');
     lines.push('        echo "[OSS] 下载失败，跳过恢复"');
     lines.push('        return 1');
     lines.push('    fi');
@@ -189,7 +189,7 @@ function generateEntrypoint(config) {
     lines.push('    echo "[OSS] 解包恢复..."');
     lines.push('    local staging_dir="/tmp/oss-restore-$(date +%s)"');
     lines.push('    mkdir -p "$staging_dir"');
-    lines.push('    if ! tar -I zstd -xf "$snapshot_file" -C "$staging_dir" 2>/dev/null; then');
+    lines.push('    if ! tar -I zstd -xf "$snapshot_file" -C "$staging_dir"; then');
     lines.push('        echo "[OSS] 解包失败，恢复备份..."');
     lines.push('        for path in "${PATHS[@]}"; do');
     lines.push('            local rel_path="${path#/}"');
@@ -290,7 +290,7 @@ function generateEntrypoint(config) {
       lines.push('    fi');
       lines.push('');
       lines.push('    echo "[FRPC] 下载配置文件..."');
-      lines.push('    if ! wget -q -O "$FRPC_CONFIG_FILE" "$FRPC_CONFIG_URL" 2>/dev/null; then');
+      lines.push('    if ! wget -q -O "$FRPC_CONFIG_FILE" "$FRPC_CONFIG_URL" ; then');
       lines.push('        echo "[FRPC] 配置文件下载失败"');
       lines.push('        return 1');
       lines.push('    fi');

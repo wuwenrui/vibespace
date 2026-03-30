@@ -162,9 +162,9 @@
           </div>
         </div>
 
-        <!-- 部署环境选择（下拉框） -->
+        <!-- 部署平台选择（下拉框） -->
         <div class="max-w-md mb-6">
-          <label class="text-sm font-medium text-gray-300 mb-2 block">部署环境</label>
+          <label class="text-sm font-medium text-gray-300 mb-2 block">部署平台</label>
           <select
             x-model="deployPlatform"
             class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-300 focus:border-blue-500 outline-none cursor-pointer"
@@ -618,8 +618,8 @@
 
       <!-- 步骤 5: 其他工具 -->
       <div x-show="currentStep === 5" x-transition class="fade-in">
-        <h2 class="text-xl font-bold mb-2">🔧 其他工具</h2>
-        <p class="text-gray-500 text-sm mb-6">配置额外的工具和快捷命令</p>
+        <h2 class="text-xl font-bold mb-2">🔧 其他配置</h2>
+        <p class="text-gray-500 text-sm mb-6">配置额外的工具，如内网穿透，快捷指令，数据持久化方式与外部存储</p>
 
         <div class="space-y-6 max-w-2xl">
           <!-- Cloudflare Tunnel -->
@@ -649,12 +649,12 @@
             </div>
           </div>
 
-          <!-- FRPC 内网穿透 -->
+          <!-- FRP内网穿透 -->
           <div class="border border-gray-700 rounded-xl p-4">
             <div class="flex items-center justify-between mb-3">
               <div>
-                <h3 class="font-bold text-sm">FRPC 内网穿透</h3>
-                <p class="text-gray-500 text-xs mt-0.5">通过 frp 实现内网穿透，需提供 frpc.toml/frpc.ini 配置文件下载地址</p>
+                <h3 class="font-bold text-sm">FRP内网穿透</h3>
+                <p class="text-gray-500 text-xs mt-0.5">通过 frp 实现内网穿透，需提供 frpc.toml/frpc.ini 配置文件下载地址（直链，推荐使用gist），建议在宿主机环境中使用 WireGuard、EasyTier 等安全的暴露端口方案，在云平台如 HuggingFace 中启用此选项有账号封禁风险</p>
               </div>
               <button
                 @click="frpcEnabled = !frpcEnabled"
@@ -681,7 +681,7 @@
             <div class="flex items-center justify-between mb-3">
               <div>
                 <h3 class="font-bold text-sm">Vibe 快捷命令</h3>
-                <p class="text-gray-500 text-xs mt-0.5">输入 vibe 即可执行指定命令</p>
+                <p class="text-gray-500 text-xs mt-0.5">输入 vibe 即可执行指定命令，默认为ClaudeCode特权模式</p>
               </div>
               <button
                 @click="vibeCommand = !vibeCommand"

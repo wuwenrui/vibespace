@@ -6,7 +6,7 @@ function appState() {
     totalSteps: 6,
     steps: [
       { num: 1, title: '宿主机环境', icon: '🌏' },
-      { num: 2, title: 'Code-Server', icon: '💻' },
+      { num: 2, title: '基础环境配置', icon: '💻' },
       { num: 3, title: '编程语言', icon: '🛠️' },
       { num: 4, title: 'AI 工具', icon: '🤖' },
       { num: 5, title: '其他工具', icon: '🔧' },
