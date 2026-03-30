@@ -13,7 +13,7 @@ function generateCompose(config) {
   // 端口
   lines.push('    ports:');
   lines.push('      - "22:22"');
-  if (config.codeServer) lines.push('      - "8080:8080"');
+  if (config.codeServer) lines.push('      - "12345:12345"');
 
   // 持久化
   lines.push('    volumes:');

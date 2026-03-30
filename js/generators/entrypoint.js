@@ -525,7 +525,18 @@ function generateEntrypoint(config) {
   }
 
   if (config.codeServer) {
-    lines.push('exec code-server --bind-addr 0.0.0.0:8080 $AUTH_ARGS /workspace');
+    // CNB 平台会自动注入 code-server 进程，需要检测并复用
+ if (isCnb) {
+ lines.push('# --- code-server (CNB 平台) ---');
+ lines.push('# CNB 会自动注入 code-server 进程，检测是否已运行');
+ lines.push('if pgrep -f \'(^|/)code-server( |$)\' >/dev/null || pgrep -f \'/usr/lib/code-server/lib/node /usr/lib/code-server\' >/dev/null; then');
+ lines.push(' echo "[code-server] 检测到 CNB 注入的进程，跳过启动"');
+ lines.push('else');
+ lines.push(' exec code-server --bind-addr 0.0.0.0:12345 $AUTH_ARGS /workspace');
+ lines.push('fi');
+ } else {
+ lines.push('exec code-server --bind-addr 0.0.0.0:12345 $AUTH_ARGS /workspace');
+ }
   } else {
     lines.push('exec /usr/sbin/sshd -D');
   }

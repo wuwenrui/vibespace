@@ -313,7 +313,7 @@ function generateDockerfile(config) {
   lines.push('WORKDIR /workspace');
 
   const ports = [];
-  if (config.codeServer) ports.push('8080');
+  if (config.codeServer) ports.push('12345');
   ports.push('22');
   lines.push(`EXPOSE ${ports.join(' ')}`);
   lines.push('ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]');
