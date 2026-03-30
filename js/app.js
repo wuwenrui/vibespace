@@ -35,10 +35,11 @@ function appState() {
     gitUserEmail: '',
     rootPassword: '',
     csPassword: '',
-    sshPrivateKey: '',
     sshPublicKey: '',
     cfTunnel: false,
     cfToken: '',
+    frpcEnabled: false,
+    frpcConfigUrl: '',
     vibeCommand: false,
     vibeCommandText: DEFAULTS.vibeDefaultCommand,
     volumeMode: 'named',
@@ -63,6 +64,7 @@ function appState() {
     generatedCompose: '',
     generatedDeploy: '',
     generatedCnbYml: '',
+    generatedEnvFile: '',
 
     /** 初始化：加载默认预设，监听配置变更自动重新生成 */
     init() {
@@ -73,8 +75,8 @@ function appState() {
         'aiTools', 'aiToolVersions', 'claudeMcpServers',
         'claudeWorkflows', 'claudeOutputStyle', 'claudeDisableTelemetry',
         'gitUserName', 'gitUserEmail',
-        'rootPassword', 'csPassword', 'sshPrivateKey', 'sshPublicKey',
-        'cfTunnel', 'cfToken', 'vibeCommand', 'vibeCommandText',
+        'cfTunnel', 'cfToken', 'frpcEnabled', 'frpcConfigUrl',
+        'vibeCommand', 'vibeCommandText',
         'volumeMode', 'customDockerfile',
         'ossEnabled', 'ossEndpoint', 'ossAccessKey', 'ossSecretKey', 'ossBucket',
         'ossRegion', 'ossProject', 'ossPaths', 'ossKeepCount', 'ossSyncInterval',
@@ -224,10 +226,11 @@ function appState() {
       this.gitUserEmail = p.gitUserEmail || '';
       this.rootPassword = p.rootPassword || '';
       this.csPassword = p.csPassword || '';
-      this.sshPrivateKey = p.sshPrivateKey || '';
       this.sshPublicKey = p.sshPublicKey || '';
       this.cfTunnel = p.cfTunnel;
       this.cfToken = p.cfToken;
+      this.frpcEnabled = p.frpcEnabled || false;
+      this.frpcConfigUrl = p.frpcConfigUrl || '';
       this.vibeCommand = p.vibeCommand;
       this.vibeCommandText = p.vibeCommandText;
       this.volumeMode = p.volumeMode || 'named';
@@ -248,12 +251,14 @@ function appState() {
           this.generatedCompose = '';
           this.generatedDeploy = '';
           this.generatedCnbYml = generateCnbYml(config);
+          this.generatedEnvFile = '';
           break;
         case 'local': // 本机/Docker
         default:
           this.generatedCompose = generateCompose(config);
           this.generatedDeploy = generateDeploy(config);
           this.generatedCnbYml = '';
+          this.generatedEnvFile = generateEnvFile(config);
           break;
       }
       this.$nextTick(() => highlightAll());
@@ -270,8 +275,8 @@ function appState() {
         claudeDisableTelemetry: this.claudeDisableTelemetry,
         gitUserName: this.gitUserName, gitUserEmail: this.gitUserEmail,
         rootPassword: this.rootPassword, csPassword: this.csPassword,
-        sshPrivateKey: this.sshPrivateKey, sshPublicKey: this.sshPublicKey,
         cfTunnel: this.cfTunnel, cfToken: this.cfToken,
+        frpcEnabled: this.frpcEnabled, frpcConfigUrl: this.frpcConfigUrl,
         vibeCommand: this.vibeCommand, vibeCommandText: this.vibeCommandText,
         volumeMode: this.volumeMode,
         customDockerfile: this.customDockerfile,
@@ -328,6 +333,7 @@ function appState() {
         default:
           files['docker-compose.yml'] = this.generatedCompose;
           files['deploy.sh'] = this.generatedDeploy;
+          files['.env'] = this.generatedEnvFile;
           break;
       }
       await downloadAllAsZip(files);

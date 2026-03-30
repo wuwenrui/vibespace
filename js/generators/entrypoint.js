@@ -5,6 +5,7 @@ function generateEntrypoint(config) {
   const isChina = config.region === 'china';
   const isCnb = config.deployPlatform === 'cnb';
   const ossEnabled = isCnb && config.ossEnabled;
+  const frpcEnabled = config.frpcEnabled;
 
   lines.push('#!/bin/bash');
   lines.push('set -e');
@@ -293,18 +294,12 @@ function generateEntrypoint(config) {
   lines.push('fi');
   lines.push('');
 
-  // SSH 客户端密钥
-  lines.push('# --- SSH 密钥 ---');
-  lines.push('if [ -n "$SSH_PRIVATE_KEY" ]; then');
+  // SSH authorized_keys (允许他人通过私钥连接本机)
+  lines.push('# --- SSH authorized_keys ---');
+  lines.push('if [ -n "$SSH_PUBLIC_KEY" ]; then');
   lines.push('    mkdir -p ~/.ssh && chmod 700 ~/.ssh');
-  lines.push('    echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa');
-  lines.push('    chmod 600 ~/.ssh/id_rsa');
-  lines.push('    if [ -n "$SSH_PUBLIC_KEY" ]; then');
-  lines.push('        echo "$SSH_PUBLIC_KEY" > ~/.ssh/id_rsa.pub');
-  lines.push('        chmod 644 ~/.ssh/id_rsa.pub');
-  lines.push('    fi');
-  lines.push('    ssh-keyscan -t rsa github.com gitlab.com gitee.com >> ~/.ssh/known_hosts 2>/dev/null');
-  lines.push('    chmod 644 ~/.ssh/known_hosts');
+  lines.push('    echo "$SSH_PUBLIC_KEY" >> ~/.ssh/authorized_keys');
+  lines.push('    chmod 600 ~/.ssh/authorized_keys');
   lines.push('fi');
   lines.push('');
 
@@ -332,6 +327,92 @@ function generateEntrypoint(config) {
     lines.push(`    wget -q -O /usr/local/bin/cloudflared "${cfUrl}"`);
     lines.push('    chmod +x /usr/local/bin/cloudflared');
     lines.push('    nohup /usr/local/bin/cloudflared tunnel run --token "$CF_TUNNEL_TOKEN" > /var/log/cloudflared.log 2>&1 &');
+    lines.push('fi');
+    lines.push('');
+  }
+
+  // FRPC 内网穿透
+  if (frpcEnabled) {
+    const frpcUrl = isChina ? DEFAULTS.frpc.mirrorUrl : DEFAULTS.frpc.url;
+    lines.push('# --- FRPC 内网穿透 ---');
+    lines.push('');
+    lines.push('# FRPC 相关变量');
+    lines.push('FRPC_CONFIG_URL="${FRPC_CONFIG_URL:-}"');
+    lines.push('FRPC_PID_FILE="/var/run/frpc.pid"');
+    lines.push('FRPC_LOG_FILE="/var/log/frpc.log"');
+    lines.push('FRPC_CONFIG_FILE="/etc/frpc.toml"');
+    lines.push('');
+    lines.push('# 函数: 启动 frpc');
+    lines.push('start_frpc() {');
+    lines.push('    if [ -z "$FRPC_CONFIG_URL" ]; then');
+    lines.push('        echo "[FRPC] 未配置 FRPC_CONFIG_URL，跳过启动"');
+    lines.push('        return 1');
+    lines.push('    fi');
+    lines.push('');
+    lines.push('    # 检查是否已运行');
+    lines.push('    if [ -f "$FRPC_PID_FILE" ] && kill -0 $(cat "$FRPC_PID_FILE") 2>/dev/null; then');
+    lines.push('        echo "[FRPC] frpc 已在运行 (PID: $(cat $FRPC_PID_FILE))"');
+    lines.push('        return 0');
+    lines.push('    fi');
+    lines.push('');
+    lines.push('    # 备份旧配置文件');
+    lines.push('    if [ -f "$FRPC_CONFIG_FILE" ]; then');
+    lines.push('        mv "$FRPC_CONFIG_FILE" "$FRPC_CONFIG_FILE.bak.$(date +%s)"');
+    lines.push('        echo "[FRPC] 已备份旧配置文件"');
+    lines.push('    fi');
+    lines.push('');
+    lines.push('    echo "[FRPC] 下载配置文件..."');
+    lines.push('    if ! wget -q -O "$FRPC_CONFIG_FILE" "$FRPC_CONFIG_URL" 2>/dev/null; then');
+    lines.push('        echo "[FRPC] 配置文件下载失败"');
+    lines.push('        return 1');
+    lines.push('    fi');
+    lines.push('');
+    lines.push('    echo "[FRPC] 启动 frpc..."');
+    lines.push('    nohup /usr/local/bin/frpc -c "$FRPC_CONFIG_FILE" > "$FRPC_LOG_FILE" 2>&1 &');
+    lines.push('    local pid=$!');
+    lines.push('    echo $pid > "$FRPC_PID_FILE"');
+    lines.push('    echo "[FRPC] frpc 已启动 (PID: $pid)，日志: $FRPC_LOG_FILE"');
+    lines.push('}');
+    lines.push('');
+    lines.push('# 函数: 停止 frpc');
+    lines.push('stop_frpc() {');
+    lines.push('    if [ -f "$FRPC_PID_FILE" ]; then');
+    lines.push('        local pid=$(cat "$FRPC_PID_FILE")');
+    lines.push('        if kill -0 "$pid" 2>/dev/null; then');
+    lines.push('            kill "$pid" 2>/dev/null || true');
+    lines.push('            rm -f "$FRPC_PID_FILE"');
+    lines.push('            echo "[FRPC] frpc 已停止"');
+    lines.push('        else');
+    lines.push('            rm -f "$FRPC_PID_FILE"');
+    lines.push('            echo "[FRPC] frpc 未运行，清理 PID 文件"');
+    lines.push('        fi');
+    lines.push('    else');
+    lines.push('        echo "[FRPC] frpc 未运行"');
+    lines.push('    fi');
+    lines.push('}');
+    lines.push('');
+    lines.push('# 函数: 重启 frpc');
+    lines.push('restart_frpc() {');
+    lines.push('    stop_frpc');
+    lines.push('    sleep 1');
+    lines.push('    start_frpc');
+    lines.push('}');
+    lines.push('');
+    lines.push('# 支持 --frp 参数');
+    lines.push('if [ "$1" = "--frp" ]; then');
+    lines.push('    case "$2" in');
+    lines.push('        start)   start_frpc; exit $? ;;');
+    lines.push('        stop)    stop_frpc; exit $? ;;');
+    lines.push('        restart) restart_frpc; exit $? ;;');
+    lines.push('        *)       echo "用法: $0 --frp [start|stop|restart]"; exit 1 ;;');
+    lines.push('    esac');
+    lines.push('fi');
+    lines.push('');
+    lines.push('# 下载 frpc 二进制');
+    lines.push('if [ -n "$FRPC_CONFIG_URL" ]; then');
+    lines.push(`    wget -q -O /usr/local/bin/frpc "${frpcUrl}"`);
+    lines.push('    chmod +x /usr/local/bin/frpc');
+    lines.push('    start_frpc');
     lines.push('fi');
     lines.push('');
   }
@@ -405,10 +486,10 @@ function generateEntrypoint(config) {
   lines.push('- `ROOT_PASSWORD`: SSH root 密码 (默认: root123)');
   lines.push('- `GIT_USER_NAME`: Git 用户名');
   lines.push('- `GIT_USER_EMAIL`: Git 邮箱');
-  lines.push('- `SSH_PRIVATE_KEY`: SSH 私钥');
-  lines.push('- `SSH_PUBLIC_KEY`: SSH 公钥');
+  lines.push('- `SSH_PUBLIC_KEY`: SSH 公钥 (用于连接容器)');
   if (config.codeServer) lines.push('- `CS_PASSWORD`: Code-Server 密码 (不设置则免密)');
   if (config.cfTunnel) lines.push('- `CF_TUNNEL_TOKEN`: Cloudflare Tunnel Token');
+  if (config.frpcEnabled) lines.push('- `FRPC_CONFIG_URL`: frpc 配置文件下载地址');
 
   // OSS 环境变量说明 (仅 CNB)
   if (isCnb) {
@@ -433,6 +514,16 @@ function generateEntrypoint(config) {
   lines.push('# --- 启动 ---');
   lines.push('/usr/sbin/sshd');
   lines.push('');
+
+  // FRPC 重启 (容器启动时自动调用)
+  if (frpcEnabled) {
+    lines.push('# 启动时重启 frpc');
+    lines.push('if [ -n "$FRPC_CONFIG_URL" ] && [ -f /usr/local/bin/frpc ]; then');
+    lines.push('    restart_frpc');
+    lines.push('fi');
+    lines.push('');
+  }
+
   if (config.codeServer) {
     lines.push('exec code-server --bind-addr 0.0.0.0:8080 $AUTH_ARGS /workspace');
   } else {

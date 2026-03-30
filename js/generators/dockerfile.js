@@ -88,7 +88,7 @@ function generateDockerfile(config) {
   if (config.languages.includes('python') && isChina) {
     layer1.push(`pip3 config set global.index-url ${mirrors.pip}`);
   }
-  layer1.push('apt-get autoremove -y', 'apt-get clean', 'rm -rf /var/lib/apt/lists/*');
+  layer1.push('apt-get autoremove -y', 'apt-get clean');
   lines.push('# 层1: 系统包 + 基础工具');
   lines.push('RUN ' + layer1.join(' \\\n    && '));
   lines.push('');
@@ -107,7 +107,7 @@ function generateDockerfile(config) {
   }
   if (config.languages.includes('python') && config.pythonVenv) {
     const pyVenvPkg = pythonVer !== 'system' ? `python${pythonVer}-venv` : 'python3-venv';
-    runtime.push(`apt-get update && apt-get install -y --no-install-recommends ${pyVenvPkg} && apt-get clean && rm -rf /var/lib/apt/lists/*`);
+    runtime.push(`apt-get update && apt-get install -y --no-install-recommends ${pyVenvPkg} && apt-get clean`);
   }
   if (runtime.length) {
     lines.push('# 层2: 语言运行时');

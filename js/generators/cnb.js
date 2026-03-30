@@ -23,10 +23,6 @@ function generateCnbYml(config) {
   }
   lines.push('        GIT_USER_NAME: ' + (config.gitUserName || ''));
   lines.push('        GIT_USER_EMAIL: ' + (config.gitUserEmail || ''));
-  if (config.sshPrivateKey) {
-    const escaped = config.sshPrivateKey.replace(/\n/g, '\\n');
-    lines.push(`        SSH_PRIVATE_KEY: "${escaped}"`);
-  }
   if (config.sshPublicKey) {
     lines.push(`        SSH_PUBLIC_KEY: ${config.sshPublicKey}`);
   }
@@ -36,6 +32,10 @@ function generateCnbYml(config) {
   if (config.cfTunnel) {
     lines.push('        #请在此填入您的Cloudflare Tunnel Token');
     lines.push('        CF_TUNNEL_TOKEN: ' + (config.cfToken || ''));
+  }
+  if (config.frpcEnabled) {
+    lines.push('        #请在此填入您的frpc配置文件下载地址（需为直链）');
+    lines.push('        FRPC_CONFIG_URL: ' + (config.frpcConfigUrl || ''));
   }
 
   // OSS 对象存储持久化配置
