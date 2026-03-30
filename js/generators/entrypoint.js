@@ -25,7 +25,7 @@ function generateEntrypoint(config) {
     lines.push('# OSS_BUCKET: 桶名');
     lines.push('# OSS_REGION: 区域 (默认 auto)');
     lines.push('# OSS_PROJECT: 项目名，用于快照文件命名前缀 (默认 devbox)');
-    lines.push('# OSS_PATHS: 要持久化的目录列表 (冒号分隔)');
+    lines.push('# OSS_PATHS: 要持久化的目录列表 (逗号分隔)');
     lines.push('# OSS_KEEP_COUNT: 保留快照数量 (默认 3)');
     lines.push('# OSS_SYNC_INTERVAL: 同步间隔分钟 (默认 30)');
     lines.push('');
@@ -36,7 +36,7 @@ function generateEntrypoint(config) {
     lines.push('OSS_BUCKET="${OSS_BUCKET:-}"');
     lines.push('OSS_REGION="${OSS_REGION:-auto}"');
     lines.push('OSS_PROJECT="${OSS_PROJECT:-devbox}"');
-    lines.push('OSS_PATHS="${OSS_PATHS:-/root/.claude:/root/.cc-switch:/root/.local/share/code-server/User/globalStorage:/root/.vscode-server/data/User/globalStorage}"');
+    lines.push('OSS_PATHS="${OSS_PATHS:-/root/.claude,/root/.cc-switch,/root/.local/share/code-server/User/globalStorage,/root/.vscode-server/data/User/globalStorage}"');
     lines.push('OSS_KEEP_COUNT="${OSS_KEEP_COUNT:-5}"');
     lines.push('OSS_SYNC_INTERVAL="${OSS_SYNC_INTERVAL:-5}"');
     lines.push('');
@@ -70,7 +70,7 @@ function generateEntrypoint(config) {
     lines.push('');
     lines.push('    # 1. 复制目标目录到 staging');
     lines.push('    mkdir -p "$staging_dir"');
-    lines.push('    IFS=\':\' read -ra PATHS <<< "$OSS_PATHS"');
+    lines.push('    IFS=',' read -ra PATHS <<< "$OSS_PATHS"');
     lines.push('    for path in "${PATHS[@]}"; do');
     lines.push('        if [ -d "$path" ]; then');
     lines.push('            # 保持相对路径结构');
@@ -166,7 +166,7 @@ function generateEntrypoint(config) {
     lines.push('    echo "[OSS] 备份当前目录..."');
     lines.push('    local backup_dir="/tmp/pre-restore-backup-$(date +%s)"');
     lines.push('    mkdir -p "$backup_dir"');
-    lines.push('    IFS=\':\' read -ra PATHS <<< "$OSS_PATHS"');
+    lines.push('    IFS=',' read -ra PATHS <<< "$OSS_PATHS"');
     lines.push('    for path in "${PATHS[@]}"; do');
     lines.push('        if [ -d "$path" ]; then');
     lines.push('            local rel_path="${path#/}"');
@@ -502,7 +502,7 @@ function generateEntrypoint(config) {
     lines.push('- `OSS_BUCKET`: 桶名');
     lines.push('- `OSS_REGION`: 区域 (默认 auto)');
     lines.push('- `OSS_PROJECT`: 项目名，用于快照文件命名前缀 (默认 devbox)');
-    lines.push('- `OSS_PATHS`: 持久化目录列表 (冒号分隔)');
+    lines.push('- `OSS_PATHS`: 持久化目录列表 (逗号分隔)');
     lines.push('- `OSS_KEEP_COUNT`: 保留快照数 (默认 5)');
     lines.push('- `OSS_SYNC_INTERVAL`: 同步间隔分钟 (默认 5)');
   }
