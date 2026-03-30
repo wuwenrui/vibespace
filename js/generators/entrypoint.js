@@ -34,11 +34,11 @@ function generateEntrypoint(config) {
     lines.push('OSS_ACCESS_KEY="${OSS_ACCESS_KEY:-}"');
     lines.push('OSS_SECRET_KEY="${OSS_SECRET_KEY:-}"');
     lines.push('OSS_BUCKET="${OSS_BUCKET:-}"');
-    lines.push(`OSS_REGION="${config.ossRegion || 'auto'}"`);
-    lines.push(`OSS_PROJECT="${config.ossProject || 'devbox'}"`);
-    lines.push(`OSS_PATHS="${config.ossPaths || '/root/.claude:/root/.cc-switch:/root/.local/share/code-server/User/globalStorage:/root/.vscode-server/data/User/globalStorage'}"`);
-    lines.push(`OSS_KEEP_COUNT="${config.ossKeepCount || 5}"`);
-    lines.push(`OSS_SYNC_INTERVAL="${config.ossSyncInterval || 5}"`);
+    lines.push('OSS_REGION="${OSS_REGION:-auto}"');
+    lines.push('OSS_PROJECT="${OSS_PROJECT:-devbox}"');
+    lines.push('OSS_PATHS="${OSS_PATHS:-/root/.claude:/root/.cc-switch:/root/.local/share/code-server/User/globalStorage:/root/.vscode-server/data/User/globalStorage}"');
+    lines.push('OSS_KEEP_COUNT="${OSS_KEEP_COUNT:-5}"');
+    lines.push('OSS_SYNC_INTERVAL="${OSS_SYNC_INTERVAL:-5}"');
     lines.push('');
     lines.push('# rclone 内联配置字符串');
     lines.push('RCLONE_REMOTE=":s3,provider=Other,access_key_id=\'${OSS_ACCESS_KEY}\',secret_access_key=\'${OSS_SECRET_KEY}\',region=\'${OSS_REGION}\',endpoint=\'${OSS_ENDPOINT}\'"');
