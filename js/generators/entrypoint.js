@@ -259,88 +259,178 @@ function generateEntrypoint(config) {
     lines.push('    upload_snapshot');
     lines.push('    exit $?');
     lines.push('fi');
-
-    // FRPC 函数定义和 --frp 参数处理 (移到 restore_snapshot 之前)
-    if (frpcEnabled) {
-      const frpcUrl = isChina ? DEFAULTS.frpc.mirrorUrl : DEFAULTS.frpc.url;
-      lines.push('');
-      lines.push('# FRPC 相关变量');
-      lines.push('FRPC_CONFIG_URL="${FRPC_CONFIG_URL:-}"');
-      lines.push('FRPC_PID_FILE="/var/run/frpc.pid"');
-      lines.push('FRPC_LOG_FILE="/var/log/frpc.log"');
-      lines.push('FRPC_CONFIG_FILE="/etc/frpc.toml"');
-      lines.push('');
-      lines.push('# 函数: 启动 frpc');
-      lines.push('start_frpc() {');
-      lines.push('    if [ -z "$FRPC_CONFIG_URL" ]; then');
-      lines.push('        echo "[FRPC] 未配置 FRPC_CONFIG_URL，跳过启动"');
-      lines.push('        return 1');
-      lines.push('    fi');
-      lines.push('');
-      lines.push('    # 检查是否已运行');
-      lines.push('    if [ -f "$FRPC_PID_FILE" ] && kill -0 $(cat "$FRPC_PID_FILE") 2>/dev/null; then');
-      lines.push('        echo "[FRPC] frpc 已在运行 (PID: $(cat $FRPC_PID_FILE))"');
-      lines.push('        return 0');
-      lines.push('    fi');
-      lines.push('');
-      lines.push('    # 备份旧配置文件');
-      lines.push('    if [ -f "$FRPC_CONFIG_FILE" ]; then');
-      lines.push('        mv "$FRPC_CONFIG_FILE" "$FRPC_CONFIG_FILE.bak.$(date +%s)"');
-      lines.push('        echo "[FRPC] 已备份旧配置文件"');
-      lines.push('    fi');
-      lines.push('');
-      lines.push('    echo "[FRPC] 下载配置文件..."');
-      lines.push('    if ! wget -q -O "$FRPC_CONFIG_FILE" "$FRPC_CONFIG_URL" ; then');
-      lines.push('        echo "[FRPC] 配置文件下载失败"');
-      lines.push('        return 1');
-      lines.push('    fi');
-      lines.push('');
-      lines.push('    echo "[FRPC] 启动 frpc..."');
-      lines.push('    nohup /usr/local/bin/frpc -c "$FRPC_CONFIG_FILE" > "$FRPC_LOG_FILE" 2>&1 &');
-      lines.push('    local pid=$!');
-      lines.push('    echo $pid > "$FRPC_PID_FILE"');
-      lines.push('    echo "[FRPC] frpc 已启动 (PID: $pid)，日志: $FRPC_LOG_FILE"');
-      lines.push('}');
-      lines.push('');
-      lines.push('# 函数: 停止 frpc');
-      lines.push('stop_frpc() {');
-      lines.push('    if [ -f "$FRPC_PID_FILE" ]; then');
-      lines.push('        local pid=$(cat "$FRPC_PID_FILE")');
-      lines.push('        if kill -0 "$pid" 2>/dev/null; then');
-      lines.push('            kill "$pid" 2>/dev/null || true');
-      lines.push('            rm -f "$FRPC_PID_FILE"');
-      lines.push('            echo "[FRPC] frpc 已停止"');
-      lines.push('        else');
-      lines.push('            rm -f "$FRPC_PID_FILE"');
-      lines.push('            echo "[FRPC] frpc 未运行，清理 PID 文件"');
-      lines.push('        fi');
-      lines.push('    else');
-      lines.push('        echo "[FRPC] frpc 未运行"');
-      lines.push('    fi');
-      lines.push('}');
-      lines.push('');
-      lines.push('# 函数: 重启 frpc');
-      lines.push('restart_frpc() {');
-      lines.push('    stop_frpc');
-      lines.push('    sleep 1');
-      lines.push('    start_frpc');
-      lines.push('}');
-      lines.push('');
-      lines.push('# 支持 --frp 参数（在 restore_snapshot 之前）');
-      lines.push('if [ "$1" = "--frp" ]; then');
-      lines.push('    case "$2" in');
-      lines.push('        start)   start_frpc; exit $? ;;');
-      lines.push('        stop)    stop_frpc; exit $? ;;');
-      lines.push('        restart) restart_frpc; exit $? ;;');
-      lines.push('        *)       echo "用法: $0 --frp [start|stop|restart]"; exit 1 ;;');
-      lines.push('    esac');
-      lines.push('fi');
-    }
-
     lines.push('');
     lines.push('rm -f /root/syncflag.txt');
     lines.push('');
   }
+
+  // FRPC 函数定义和参数处理（独立于部署平台）
+  if (frpcEnabled) {
+    lines.push('# ============================================');
+    lines.push('# FRPC 内网穿透');
+    lines.push('# ============================================');
+    lines.push('FRPC_CONFIG_URL="${FRPC_CONFIG_URL:-}"');
+    lines.push('FRPC_PID_FILE="/var/run/frpc.pid"');
+    lines.push('FRPC_LOG_FILE="/var/log/frpc.log"');
+    lines.push('FRPC_CONFIG_FILE="/etc/frpc.toml"');
+    lines.push('');
+    lines.push('# 函数: 启动 frpc');
+    lines.push('start_frpc() {');
+    lines.push('    if [ -z "$FRPC_CONFIG_URL" ]; then');
+    lines.push('        echo "[FRPC] 未配置 FRPC_CONFIG_URL，跳过启动"');
+    lines.push('        return 1');
+    lines.push('    fi');
+    lines.push('');
+    lines.push('    # 检查是否已运行');
+    lines.push('    if [ -f "$FRPC_PID_FILE" ] && kill -0 $(cat "$FRPC_PID_FILE") 2>/dev/null; then');
+    lines.push('        echo "[FRPC] frpc 已在运行 (PID: $(cat $FRPC_PID_FILE))"');
+    lines.push('        return 0');
+    lines.push('    fi');
+    lines.push('');
+    lines.push('    # 备份旧配置文件');
+    lines.push('    if [ -f "$FRPC_CONFIG_FILE" ]; then');
+    lines.push('        mv "$FRPC_CONFIG_FILE" "$FRPC_CONFIG_FILE.bak.$(date +%s)"');
+    lines.push('        echo "[FRPC] 已备份旧配置文件"');
+    lines.push('    fi');
+    lines.push('');
+    lines.push('    echo "[FRPC] 下载配置文件..."');
+    lines.push('    if ! wget -q -O "$FRPC_CONFIG_FILE" "$FRPC_CONFIG_URL" ; then');
+    lines.push('        echo "[FRPC] 配置文件下载失败"');
+    lines.push('        return 1');
+    lines.push('    fi');
+    lines.push('');
+    lines.push('    echo "[FRPC] 启动 frpc..."');
+    lines.push('    nohup /usr/local/bin/frpc -c "$FRPC_CONFIG_FILE" > "$FRPC_LOG_FILE" 2>&1 &');
+    lines.push('    local pid=$!');
+    lines.push('    echo $pid > "$FRPC_PID_FILE"');
+    lines.push('    echo "[FRPC] frpc 已启动 (PID: $pid)，日志: $FRPC_LOG_FILE"');
+    lines.push('}');
+    lines.push('');
+    lines.push('# 函数: 停止 frpc');
+    lines.push('stop_frpc() {');
+    lines.push('    if [ -f "$FRPC_PID_FILE" ]; then');
+    lines.push('        local pid=$(cat "$FRPC_PID_FILE")');
+    lines.push('        if kill -0 "$pid" 2>/dev/null; then');
+    lines.push('            kill "$pid" 2>/dev/null || true');
+    lines.push('            rm -f "$FRPC_PID_FILE"');
+    lines.push('            echo "[FRPC] frpc 已停止"');
+    lines.push('        else');
+    lines.push('            rm -f "$FRPC_PID_FILE"');
+    lines.push('            echo "[FRPC] frpc 未运行，清理 PID 文件"');
+    lines.push('        fi');
+    lines.push('    else');
+    lines.push('        echo "[FRPC] frpc 未运行"');
+    lines.push('    fi');
+    lines.push('}');
+    lines.push('');
+    lines.push('# 函数: 重启 frpc');
+    lines.push('restart_frpc() {');
+    lines.push('    stop_frpc');
+    lines.push('    sleep 1');
+    lines.push('    start_frpc');
+    lines.push('}');
+    lines.push('');
+    lines.push('# 支持 --frp 参数');
+    lines.push('if [ "$1" = "--frp" ]; then');
+    lines.push('    case "$2" in');
+    lines.push('        start)   start_frpc; exit $? ;;');
+    lines.push('        stop)    stop_frpc; exit $? ;;');
+    lines.push('        restart) restart_frpc; exit $? ;;');
+    lines.push('        *)       echo "用法: $0 --frp [start|stop|restart]"; exit 1 ;;');
+    lines.push('    esac');
+    lines.push('fi');
+    lines.push('');
+  }
+
+  // --commands 参数（始终生成，方便后期扩展）
+  lines.push('# ============================================');
+  lines.push('# Vibespace 管理菜单');
+  lines.push('# ============================================');
+  lines.push('# 支持 --commands 参数（交互式菜单）');
+  lines.push('if [ "$1" = "--commands" ]; then');
+  lines.push('    echo "============================================"');
+  lines.push('    echo "  Vibespace 管理菜单"');
+  lines.push('    echo "============================================"');
+  if (isCnb) {
+    lines.push('    echo "  1. 上传到对象存储"');
+    lines.push('    echo "  2. 从对象存储下载并覆盖本地"');
+  }
+  if (frpcEnabled) {
+    lines.push('    echo "  3. 启动 frpc"');
+    lines.push('    echo "  4. 停止 frpc"');
+    lines.push('    echo "  5. 重启 frpc"');
+    lines.push('    echo "  6. 查看 frpc 状态"');
+    lines.push('    echo "  7. 查看 frpc 日志"');
+  }
+  if (isCnb) {
+    lines.push('    echo "  8. 手动同步 (上传快照)"');
+  }
+  lines.push('    echo "  0. 退出"');
+  lines.push('    echo "============================================"');
+  lines.push('    read -p "请选择操作 [0-8]: " choice');
+  lines.push('');
+  lines.push('    case "$choice" in');
+  if (isCnb) {
+    lines.push('        1)');
+    lines.push('            echo "[操作] 上传到对象存储..."');
+    lines.push('            upload_snapshot');
+    lines.push('            ;;');
+    lines.push('        2)');
+    lines.push('            echo "[操作] 从对象存储下载并覆盖本地..."');
+    lines.push('            # 先清空 syncflag 以允许强制覆盖');
+    lines.push('            rm -f /root/syncflag.txt');
+    lines.push('            restore_snapshot');
+    lines.push('            ;;');
+  }
+  if (frpcEnabled) {
+    lines.push('        3)');
+    lines.push('            echo "[操作] 启动 frpc..."');
+    lines.push('            start_frpc');
+    lines.push('            ;;');
+    lines.push('        4)');
+    lines.push('            echo "[操作] 停止 frpc..."');
+    lines.push('            stop_frpc');
+    lines.push('            ;;');
+    lines.push('        5)');
+    lines.push('            echo "[操作] 重启 frpc..."');
+    lines.push('            restart_frpc');
+    lines.push('            ;;');
+    lines.push('        6)');
+    lines.push('            echo "[操作] 查看 frpc 状态..."');
+    lines.push('            if [ -f "$FRPC_PID_FILE" ] && kill -0 $(cat "$FRPC_PID_FILE") 2>/dev/null; then');
+    lines.push('                echo "[FRPC] frpc 正在运行 (PID: $(cat $FRPC_PID_FILE))"');
+    lines.push('            else');
+    lines.push('                echo "[FRPC] frpc 未运行"');
+    lines.push('            fi');
+    lines.push('            ;;');
+    lines.push('        7)');
+    lines.push('            echo "[操作] 查看 frpc 日志..."');
+    lines.push('            if [ -f "$FRPC_LOG_FILE" ]; then');
+    lines.push('                echo "--- 最近 50 行日志 ---"');
+    lines.push('                tail -50 "$FRPC_LOG_FILE"');
+    lines.push('            else');
+    lines.push('                echo "[FRPC] 日志文件不存在: $FRPC_LOG_FILE"');
+    lines.push('            fi');
+    lines.push('            ;;');
+  }
+  if (isCnb) {
+    lines.push('        8)');
+    lines.push('            echo "[操作] 手动同步 (上传快照)..."');
+    lines.push('            upload_snapshot');
+    lines.push('            ;;');
+  }
+  lines.push('        0)');
+  lines.push('            echo "退出"');
+  lines.push('            exit 0');
+  lines.push('            ;;');
+  lines.push('        *)');
+  lines.push('            echo "无效选择: $choice"');
+  lines.push('            exit 1');
+  lines.push('            ;;');
+  lines.push('    esac');
+  lines.push('    exit 0');
+  lines.push('fi');
+  lines.push('');
 
   // DNS (构建阶段 resolv.conf 只读，在运行时配置)
   if (isChina) {

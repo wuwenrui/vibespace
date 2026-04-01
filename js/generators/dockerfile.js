@@ -307,6 +307,14 @@ function generateDockerfile(config) {
   lines.push('# 备份 /root，防止 volume 挂载覆盖镜像内文件');
   lines.push('RUN mkdir /root-defaults && cp -a /root /root-defaults');
   lines.push('');
+
+  // 创建 vibespace 管理命令脚本（始终生成，方便后期扩展）
+  lines.push('# 创建 vibespace 管理命令');
+  lines.push('RUN echo \'#!/bin/bash\' > /usr/local/bin/vibespace \\');
+  lines.push('    && echo \'/usr/local/bin/entrypoint.sh --commands\' >> /usr/local/bin/vibespace \\');
+  lines.push('    && chmod +x /usr/local/bin/vibespace');
+  lines.push('');
+
   lines.push('COPY entrypoint.sh /usr/local/bin/entrypoint.sh');
   lines.push('RUN chmod +x /usr/local/bin/entrypoint.sh');
   lines.push('');
