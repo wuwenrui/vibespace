@@ -19,6 +19,8 @@ const DEFAULTS = {
     { id: 'RooVeterinaryInc.roo-cline', label: 'Roo Cline', checked: false },
     { id: 'Anthropic.claude-code', label: 'Claude Code', checked: false },
     { id: 'eamodio.gitlens', label: 'GitLens', checked: false },
+    { id: 'aminer.codegeex', label: 'CodeGeeX智谱代码补全', checked: false },
+    { id: 'MarsCode.marscode-extension', label: 'Trae代码补全', checked: false },
   ],
 
   /* 编程语言 — aptPkgs: 通过 apt 安装; devTools: 额外开发工具
