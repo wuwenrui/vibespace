@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     ports:
       - "22:22"
-      - "8080:8080"
+      - "12345:12345"
     volumes:
       - workspace:/workspace
       - root-data:/root
@@ -13,9 +13,10 @@ services:
       - ROOT_PASSWORD=${ROOT_PASSWORD:-root123}
       - GIT_USER_NAME=${GIT_USER_NAME:-}
       - GIT_USER_EMAIL=${GIT_USER_EMAIL:-}
-      - SSH_PRIVATE_KEY=${SSH_PRIVATE_KEY:-}
       - SSH_PUBLIC_KEY=${SSH_PUBLIC_KEY:-}
       - CS_PASSWORD=${CS_PASSWORD:-}
+      - CF_TUNNEL_TOKEN=${CF_TUNNEL_TOKEN:-}
+      - FRPC_CONFIG_URL=${FRPC_CONFIG_URL:-}
 
 volumes:
   workspace:
