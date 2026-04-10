@@ -74,7 +74,7 @@ const URLS = {
     baseUrl: 'https://raw.githubusercontent.com/UfoMiao/zcf/main/templates',
     /** @param {string} styleId — 样式 ID，如 'engineer-professional' */
     outputStyle: (styleId) =>
-      `https://raw.githubusercontent.com/SaladDay/zcf/main/templates/common/output-styles/zh-CN/${styleId}.md`,
+      `https://raw.githubusercontent.com/UfoMiao/zcf/main/templates/common/output-styles/zh-CN/${styleId}.md`,
   },
 
   /**

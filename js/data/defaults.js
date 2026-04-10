@@ -215,13 +215,13 @@ const DEFAULTS = {
     },
     {
       id: 'explanatory',
-      label: '解释型（UfoMiao/zcf）',
+      label: '解释型（Claudecode官方提供）',
       desc: '详细解释每一步操作',
       isCustom: false,
     },
     {
       id: 'learning',
-      label: '学习型（UfoMiao/zcf）',
+      label: '学习型（Claudecode官方提供）',
       desc: '适合学习新技术的风格',
       isCustom: false,
     },
